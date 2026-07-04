@@ -35,6 +35,23 @@ html, body, [class*="css"] {{ font-family: 'Inter', sans-serif; }}
 [data-testid="stSidebar"] * {{ color: #EAF3F1 !important; }}
 [data-testid="stSidebar"] .stSlider label, [data-testid="stSidebar"] label {{ color: #9FB6B2 !important; }}
 
+/* Sidebar multiselect / select boxes: lighter fill so they read as inputs, not blank boxes */
+[data-testid="stSidebar"] [data-baseweb="select"] > div {{
+    background-color: #16383B !important;
+    border: 1px solid #2A5B58 !important;
+    color: #EAF3F1 !important;
+}}
+[data-testid="stSidebar"] [data-baseweb="select"] input {{
+    color: #EAF3F1 !important;
+}}
+[data-testid="stSidebar"] [data-baseweb="select"] div[aria-live] {{
+    color: #9FB6B2 !important;
+}}
+[data-testid="stSidebar"] [data-baseweb="tag"] {{
+    background-color: {TEAL_BRIGHT} !important; color: {INK} !important;
+}}
+[data-testid="stSidebar"] svg {{ fill: #9FB6B2 !important; }}
+
 /* ---------- Top navbar ---------- */
 .topbar {{
     display:flex; align-items:center; justify-content:space-between;
@@ -111,10 +128,10 @@ html, body, [class*="css"] {{ font-family: 'Inter', sans-serif; }}
 
 .footer {{
     display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;
-    border-top: 1px solid {BORDER}; margin-top: 26px; padding-top: 16px;
-    font-family:'IBM Plex Mono',monospace; font-size:11px; color:{SLATE};
+    border-top: 1px solid {BORDER}; margin-top: 26px; padding-top: 16px; padding-bottom: 4px;
+    font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500; color:{INK};
 }}
-.footer a {{ color:{TEAL}; text-decoration:none; }}
+.footer a {{ color:{TEAL}; font-weight:600; text-decoration:none; }}
 .footer a:hover {{ text-decoration:underline; }}
 
 /* ---------- Tabs as a website nav ---------- */
@@ -388,9 +405,9 @@ with tab_overview:
             x=preview_counts.values, y=preview_counts.index, orientation="h", marker_color=TEAL_BRIGHT,
         ))
         fig.update_layout(
-            height=300, margin=dict(l=0, r=10, t=10, b=10),
+            height=300, margin=dict(l=10, r=10, t=10, b=10),
             plot_bgcolor=PAPER2, paper_bgcolor=PAPER2,
-            yaxis=dict(autorange="reversed", tickfont=dict(size=11)),
+            yaxis=dict(autorange="reversed", tickfont=dict(size=11), automargin=True),
             font=dict(family="IBM Plex Mono, monospace", size=11, color=SLATE),
         )
         st.plotly_chart(fig, width="stretch")
@@ -442,9 +459,9 @@ with tab_analytics:
                 orientation="h", marker_color=TEAL,
             ))
             fig.update_layout(
-                height=380, margin=dict(l=0, r=10, t=10, b=10),
+                height=380, margin=dict(l=10, r=10, t=10, b=10),
                 plot_bgcolor=PAPER2, paper_bgcolor=PAPER2,
-                yaxis=dict(autorange="reversed", tickfont=dict(size=11)),
+                yaxis=dict(autorange="reversed", tickfont=dict(size=11), automargin=True),
                 font=dict(family="IBM Plex Mono, monospace", size=11, color=SLATE),
             )
             st.plotly_chart(fig, width="stretch")
@@ -518,10 +535,10 @@ with tab_analytics:
                 x=grp["rate"], y=grp["Ownership_Type"], orientation="h", marker_color=AMBER,
             ))
             fig.update_layout(
-                height=300, margin=dict(l=0, r=10, t=10, b=10),
+                height=300, margin=dict(l=10, r=10, t=10, b=10),
                 plot_bgcolor=PAPER2, paper_bgcolor=PAPER2,
                 xaxis_title="Flagged %",
-                yaxis=dict(autorange="reversed", tickfont=dict(size=11)),
+                yaxis=dict(autorange="reversed", tickfont=dict(size=11), automargin=True),
                 font=dict(family="IBM Plex Mono, monospace", size=10.5, color=SLATE),
             )
             st.plotly_chart(fig, width="stretch")
