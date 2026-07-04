@@ -20,41 +20,115 @@ AMBER_BRIGHT = "#E08F3C"
 SLATE = "#4B5A5A"
 PAPER = "#ECEAE0"
 PAPER2 = "#F5F4EC"
+BORDER = "#C9C6B6"
 
 st.markdown(f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
+html, body, [class*="css"] {{ font-family: 'Inter', sans-serif; }}
 .stApp {{ background-color: {PAPER}; }}
+#MainMenu, footer {{ visibility: hidden; }}
+.block-container {{ padding-top: 1.2rem; max-width: 1300px; }}
+
 [data-testid="stSidebar"] {{ background-color: {INK}; }}
 [data-testid="stSidebar"] * {{ color: #EAF3F1 !important; }}
 [data-testid="stSidebar"] .stSlider label, [data-testid="stSidebar"] label {{ color: #9FB6B2 !important; }}
 
+/* ---------- Top navbar ---------- */
+.topbar {{
+    display:flex; align-items:center; justify-content:space-between;
+    background: {INK}; color:#EAF3F1; padding: 16px 28px; border-radius: 8px;
+    margin-bottom: 14px;
+}}
+.topbar-brand {{ display:flex; align-items:center; gap:12px; }}
+.topbar-logo {{
+    width:38px; height:38px; border-radius:8px; background:{TEAL_BRIGHT};
+    display:flex; align-items:center; justify-content:center; font-size:19px;
+}}
+.topbar-title {{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:19px; color:#fff; line-height:1.1; }}
+.topbar-sub {{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.08em;
+    text-transform:uppercase; color:{TEAL_BRIGHT}; }}
+.topbar-status {{ display:flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace;
+    font-size:11px; color:#9FB6B2; }}
+.dot {{ width:7px; height:7px; border-radius:50%; background:{TEAL_BRIGHT}; box-shadow:0 0 0 3px rgba(47,156,143,0.25); }}
+
+/* ---------- Hero ---------- */
 .hero {{
-    background: {INK}; color: #EAF3F1; padding: 34px 38px 26px; border-radius: 6px; margin-bottom: 18px;
+    background: linear-gradient(135deg, {INK} 0%, #123638 100%); color: #EAF3F1;
+    padding: 30px 34px 24px; border-radius: 8px; margin-bottom: 18px;
 }}
 .hero .eyebrow {{
     font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .12em;
     color: {TEAL_BRIGHT}; text-transform: uppercase; margin-bottom: 10px;
 }}
 .hero h1 {{
-    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 42px;
-    margin: 0 0 10px; line-height: 1.02; color: #fff;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 36px;
+    margin: 0 0 10px; line-height: 1.05; color: #fff;
 }}
-.hero p {{ color: #C3D6D2; max-width: 760px; font-size: 14.5px; margin:0; }}
+.hero p {{ color: #C3D6D2; max-width: 760px; font-size: 14px; margin:0; }}
 
+/* ---------- Cards ---------- */
 .kpi-card {{
-    background: {PAPER2}; border: 1px solid #C9C6B6; border-radius: 5px;
-    padding: 14px 16px; text-align:left;
+    background: {PAPER2}; border: 1px solid {BORDER}; border-radius: 8px;
+    padding: 14px 16px; text-align:left; transition: border-color .15s ease;
 }}
-.kpi-value {{ font-family: 'Space Grotesk', sans-serif; font-weight:700; font-size: 28px; color: {INK}; }}
+.kpi-card:hover {{ border-color: {TEAL_BRIGHT}; }}
+.kpi-value {{ font-family: 'Space Grotesk', sans-serif; font-weight:700; font-size: 27px; color: {INK}; }}
 .kpi-value--flag {{ color: {AMBER}; }}
-.kpi-label {{ font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; text-transform: uppercase;
+.kpi-label {{ font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase;
     letter-spacing: .05em; color: {SLATE}; margin-top:2px; }}
 
-.section-title {{ font-family: 'Space Grotesk', sans-serif; font-weight:700; font-size:19px; color:{INK}; margin: 4px 0 2px;}}
-.section-hint {{ font-size: 13px; color: {SLATE}; margin-bottom: 10px; max-width: 90ch;}}
-.footnote {{ font-size: 12px; color: {SLATE}; border-top: 1px solid #C9C6B6; padding-top: 14px; margin-top: 10px;}}
+.info-card {{
+    background:{PAPER2}; border:1px solid {BORDER}; border-left:4px solid {TEAL_BRIGHT};
+    border-radius:6px; padding:16px 18px; height:100%;
+}}
+.info-card .tag {{ font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase;
+    letter-spacing:.06em; color:{TEAL}; margin-bottom:6px; }}
+.info-card .big {{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:{INK}; }}
+.info-card .desc {{ font-size:12.5px; color:{SLATE}; margin-top:4px; }}
+
+.step-card {{
+    background:{PAPER2}; border:1px solid {BORDER}; border-radius:8px; padding:16px 18px;
+    display:flex; gap:14px; align-items:flex-start; margin-bottom:10px;
+}}
+.step-num {{
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16px; color:#fff;
+    background:{TEAL}; width:30px; height:30px; min-width:30px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+}}
+.step-title {{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14.5px; color:{INK}; }}
+.step-desc {{ font-size:12.5px; color:{SLATE}; margin-top:2px; }}
+
+.badge {{
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:10.5px;
+    background:{INK}; color:#EAF3F1; padding:5px 11px; border-radius:20px; margin:0 6px 6px 0;
+}}
+
+.section-title {{ font-family: 'Space Grotesk', sans-serif; font-weight:700; font-size:18px; color:{INK}; margin: 6px 0 2px;}}
+.section-hint {{ font-size: 12.5px; color: {SLATE}; margin-bottom: 10px; max-width: 95ch;}}
+.footnote {{ font-size: 12px; color: {SLATE}; border-top: 1px solid {BORDER}; padding-top: 14px; margin-top: 10px;}}
+
+.footer {{
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;
+    border-top: 1px solid {BORDER}; margin-top: 26px; padding-top: 16px;
+    font-family:'IBM Plex Mono',monospace; font-size:11px; color:{SLATE};
+}}
+.footer a {{ color:{TEAL}; text-decoration:none; }}
+.footer a:hover {{ text-decoration:underline; }}
+
+/* ---------- Tabs as a website nav ---------- */
+.stTabs [data-baseweb="tab-list"] {{
+    gap: 6px; border-bottom: 2px solid {BORDER}; margin-bottom: 6px;
+}}
+.stTabs [data-baseweb="tab"] {{
+    height: 42px; padding: 0 18px; background-color: transparent;
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13.5px;
+    color:{SLATE}; border-radius: 8px 8px 0 0;
+}}
+.stTabs [aria-selected="true"] {{
+    background-color: {INK} !important; color: #EAF3F1 !important;
+}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -106,13 +180,25 @@ def build_leaflet_map(states_sel, sources_sel, owners_sel, flagged_only_sel) -> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css">
     <style>
       html, body {{ margin:0; padding:0; }}
-      #map {{ height: 560px; width: 100%; border-radius: 4px; }}
+      #map {{ height: 600px; width: 100%; border-radius: 8px; }}
       .wa-pin {{ border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display:block; }}
       .wa-pin--teal {{ background: #2F9C8F; border: 2px solid #0C2124; }}
       .wa-pin--amber {{ background: #E08F3C; border: 2px solid #0C2124; }}
       .leaflet-popup-content {{ font-family: Inter, sans-serif; font-size: 13px; }}
+      .map-legend {{
+        position:absolute; bottom:14px; left:14px; z-index:500; background:rgba(12,33,36,0.92);
+        color:#EAF3F1; padding:10px 14px; border-radius:8px; font-family:'IBM Plex Mono',monospace;
+        font-size:11px; line-height:1.9;
+      }}
+      .swatch {{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:7px; }}
     </style>
-    <div id="map"></div>
+    <div style="position:relative;">
+      <div id="map"></div>
+      <div class="map-legend">
+        <div><span class="swatch" style="background:#E08F3C;"></span>Flagged by news signal</div>
+        <div><span class="swatch" style="background:#2F9C8F;"></span>No failure signal found</div>
+      </div>
+    </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
     <script>
@@ -164,6 +250,23 @@ def build_leaflet_map(states_sel, sources_sel, owners_sel, flagged_only_sel) -> 
 
 
 # ------------------------------------------------------------- SIDEBAR -----
+st.sidebar.markdown(
+    """
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+        <div style="width:34px;height:34px;border-radius:8px;background:#2F9C8F;
+             display:flex;align-items:center;justify-content:center;font-size:17px;">💧</div>
+        <div>
+            <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;color:#fff;">
+                Downtime Atlas
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.06em;
+                 text-transform:uppercase;color:#2F9C8F;">India · Water Infra</div>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
 st.sidebar.markdown("### Filters")
 
 states = st.sidebar.multiselect(
@@ -197,159 +300,337 @@ if owners:
 if flagged_only:
     filtered = filtered[filtered["Flagged"]]
 
-
-# ------------------------------------------------------------------ HERO ---
-st.markdown(f"""
-<div class="hero">
-  <div class="eyebrow">FIELD SURVEY LOG &nbsp;·&nbsp; DRINKING WATER INFRASTRUCTURE &nbsp;·&nbsp; INDIA</div>
-  <h1>Water ATM Downtime Atlas</h1>
-  <p>Every dot is a drinking-water point mapped from OpenStreetMap contributions and cross-checked
-  against live news coverage for signs of failure. Use the filters on the left to narrow the map,
-  charts, and flagged-report table below — they all stay in sync.</p>
-</div>
-""", unsafe_allow_html=True)
-
-k1, k2, k3, k4, k5 = st.columns(5)
 total = len(filtered)
 n_states = filtered["State_Name"].nunique()
 n_districts = filtered["District_Name"].nunique()
 n_flagged = int(filtered["Flagged"].sum())
 completeness = filtered["data_completeness_pct"].mean() if total else 0
 
-for col, val, label, flag in [
-    (k1, f"{total:,}", "mapped points shown", False),
-    (k2, f"{n_states}", "states / UTs", False),
-    (k3, f"{n_districts}", "districts", False),
-    (k4, f"{n_flagged}", "flagged signals", True),
-    (k5, f"{completeness:.1f}%", "avg. field completeness", False),
-]:
-    cls = "kpi-value kpi-value--flag" if flag else "kpi-value"
-    col.markdown(f"""<div class="kpi-card"><div class="{cls}">{val}</div>
-        <div class="kpi-label">{label}</div></div>""", unsafe_allow_html=True)
 
-st.write("")
+# ----------------------------------------------------------------- TOPBAR --
+st.markdown(f"""
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-logo">💧</div>
+    <div>
+      <div class="topbar-title">Water ATM Downtime Atlas</div>
+      <div class="topbar-sub">Field Survey Log · India</div>
+    </div>
+  </div>
+  <div class="topbar-status"><span class="dot"></span>{total:,} points in current view</div>
+</div>
+""", unsafe_allow_html=True)
 
 
-# ------------------------------------------------------------------- MAP ---
-st.markdown('<div class="section-title">Survey Map</div>', unsafe_allow_html=True)
-st.markdown(
-    '<div class="section-hint">Amber pins are points a news article suggests may be '
-    'non-functional. Teal pins carry no failure signal — that means "no bad news found," '
-    'not "confirmed working."</div>', unsafe_allow_html=True
+# --------------------------------------------------------------- NAV TABS --
+tab_overview, tab_map, tab_analytics, tab_flagged, tab_method = st.tabs(
+    ["🏠  Overview", "🗺️  Survey Map", "📊  Analytics", "🚩  Flagged Reports", "📖  Methodology"]
 )
 
-if total == 0:
-    st.warning("No points match the current filters.")
-else:
-    if total > 8000:
-        st.caption(
-            f"Rendering all {total:,} filtered points — clustering keeps this readable, "
-            "but narrow the filters on the left for a snappier map."
-        )
-    map_html = build_leaflet_map(tuple(states), tuple(sources), tuple(owners), flagged_only)
-    components.html(map_html, height=575, scrolling=False)
 
-st.write("")
+# ================================================================ OVERVIEW =
+with tab_overview:
+    st.markdown(f"""
+    <div class="hero">
+      <div class="eyebrow">FIELD SURVEY LOG &nbsp;·&nbsp; DRINKING WATER INFRASTRUCTURE &nbsp;·&nbsp; INDIA</div>
+      <h1>Every dot is a drinking-water point, checked for signs of failure.</h1>
+      <p>Mapped from OpenStreetMap contributions and cross-checked against live news coverage.
+      Use the filters on the left to narrow the map, charts, and flagged-report table across every
+      tab — they all stay in sync.</p>
+    </div>
+    """, unsafe_allow_html=True)
 
+    k1, k2, k3, k4, k5 = st.columns(5)
+    for col, val, label, flag in [
+        (k1, f"{total:,}", "mapped points shown", False),
+        (k2, f"{n_states}", "states / UTs", False),
+        (k3, f"{n_districts}", "districts", False),
+        (k4, f"{n_flagged}", "flagged signals", True),
+        (k5, f"{completeness:.1f}%", "avg. field completeness", False),
+    ]:
+        cls = "kpi-value kpi-value--flag" if flag else "kpi-value"
+        col.markdown(f"""<div class="kpi-card"><div class="{cls}">{val}</div>
+            <div class="kpi-label">{label}</div></div>""", unsafe_allow_html=True)
 
-# -------------------------------------------------------------- CHARTS -----
-c1, c2, c3 = st.columns([1.3, 1, 1])
+    st.write("")
+    st.markdown('<div class="section-title">At a Glance</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-hint">Quick highlights from the current filter selection.</div>',
+                unsafe_allow_html=True)
 
-with c1:
-    st.markdown('<div class="section-title">Top Districts</div>', unsafe_allow_html=True)
-    st.markdown('<div class="section-hint">By mapped point count — reflects OSM contributor '
-                'density as much as real infrastructure.</div>', unsafe_allow_html=True)
-    dist_counts = (filtered.dropna(subset=["District_Name"])
-                   .groupby(["State_Name", "District_Name"]).size()
-                   .reset_index(name="count").sort_values("count", ascending=False).head(12))
-    if not dist_counts.empty:
+    if total > 0:
+        top_state = filtered["State_Name"].value_counts().idxmax()
+        top_state_n = filtered["State_Name"].value_counts().max()
+        top_source = filtered["Water_Source"].value_counts().idxmax()
+        top_source_n = filtered["Water_Source"].value_counts().max()
+        flag_rate = (n_flagged / total * 100) if total else 0
+
+        i1, i2, i3 = st.columns(3)
+        with i1:
+            st.markdown(f"""<div class="info-card"><div class="tag">Leading State</div>
+                <div class="big">{top_state}</div>
+                <div class="desc">{top_state_n:,} mapped points — the densest OSM coverage in this view.</div>
+                </div>""", unsafe_allow_html=True)
+        with i2:
+            st.markdown(f"""<div class="info-card"><div class="tag">Most Common Source</div>
+                <div class="big">{top_source}</div>
+                <div class="desc">{top_source_n:,} points tagged with this water-source type.</div>
+                </div>""", unsafe_allow_html=True)
+        with i3:
+            st.markdown(f"""<div class="info-card"><div class="tag">Flag Rate</div>
+                <div class="big">{flag_rate:.1f}%</div>
+                <div class="desc">Share of points with a matched news signal suggesting failure.</div>
+                </div>""", unsafe_allow_html=True)
+
+        st.write("")
+        st.markdown('<div class="section-title">Top States, Preview</div>', unsafe_allow_html=True)
+        preview_counts = filtered["State_Name"].value_counts().head(8)
         fig = go.Figure(go.Bar(
-            x=dist_counts["count"], y=dist_counts["District_Name"] + " (" + dist_counts["State_Name"] + ")",
-            orientation="h", marker_color=TEAL,
+            x=preview_counts.values, y=preview_counts.index, orientation="h", marker_color=TEAL_BRIGHT,
         ))
         fig.update_layout(
-            height=380, margin=dict(l=0, r=10, t=10, b=10),
+            height=300, margin=dict(l=0, r=10, t=10, b=10),
             plot_bgcolor=PAPER2, paper_bgcolor=PAPER2,
             yaxis=dict(autorange="reversed", tickfont=dict(size=11)),
             font=dict(family="IBM Plex Mono, monospace", size=11, color=SLATE),
         )
         st.plotly_chart(fig, width="stretch")
+        st.caption("Open the **Survey Map** tab for the full interactive map, or **Analytics** for the complete chart set.")
     else:
-        st.info("No district-level data for current filters.")
-
-with c2:
-    st.markdown('<div class="section-title">Water Source Tags</div>', unsafe_allow_html=True)
-    src_counts = filtered["Water_Source"].value_counts().head(6)
-    fig = go.Figure(go.Pie(
-        labels=src_counts.index, values=src_counts.values, hole=0.62,
-        marker_colors=[TEAL, TEAL_BRIGHT, "#5FBCAE", AMBER, AMBER_BRIGHT, "#8FA8A4"],
-    ))
-    fig.update_layout(height=330, margin=dict(l=0, r=0, t=10, b=0),
-                       paper_bgcolor=PAPER2, showlegend=True,
-                       legend=dict(font=dict(size=10)))
-    st.plotly_chart(fig, width="stretch")
-
-with c3:
-    st.markdown('<div class="section-title">Ownership Type</div>', unsafe_allow_html=True)
-    own_counts = filtered["Ownership_Type"].value_counts().head(5)
-    fig = go.Figure(go.Pie(
-        labels=own_counts.index, values=own_counts.values, hole=0.62,
-        marker_colors=[TEAL, TEAL_BRIGHT, "#5FBCAE", AMBER, AMBER_BRIGHT],
-    ))
-    fig.update_layout(height=330, margin=dict(l=0, r=0, t=10, b=0),
-                       paper_bgcolor=PAPER2, showlegend=True,
-                       legend=dict(font=dict(size=10)))
-    st.plotly_chart(fig, width="stretch")
-
-st.write("")
-st.markdown('<div class="section-title">Mapped Points by State</div>', unsafe_allow_html=True)
-state_counts = filtered["State_Name"].value_counts().head(15)
-fig = go.Figure(go.Bar(x=state_counts.index, y=state_counts.values, marker_color=TEAL))
-fig.update_layout(
-    height=320, margin=dict(l=0, r=0, t=10, b=0),
-    plot_bgcolor=PAPER2, paper_bgcolor=PAPER2,
-    font=dict(family="IBM Plex Mono, monospace", size=11, color=SLATE),
-)
-st.plotly_chart(fig, width="stretch")
+        st.warning("No points match the current filters.")
 
 
-# ---------------------------------------------------------- FLAGGED LOG ----
-st.write("")
-st.markdown('<div class="section-title">Flagged Field Reports</div>', unsafe_allow_html=True)
-st.markdown('<div class="section-hint">Every row is a specific water point where a matched '
-            'news article used language suggesting it may be broken, dry, or abandoned. '
-            'Click through and verify — this is a lead list, not a finding.</div>',
-            unsafe_allow_html=True)
-
-flagged_df = filtered[filtered["Flagged"]].copy()
-if flagged_df.empty:
-    st.info("No flagged points match the current filters.")
-else:
-    flagged_df["Link"] = flagged_df["news_url"].where(
-        flagged_df["news_url"].str.len() > 0, flagged_df["osm_url"]
-    )
-    display_cols = ["State_Name", "District_Name", "Village_City_Name",
-                     "Latitude", "Longitude", "Link"]
-    st.dataframe(
-        flagged_df[display_cols],
-        column_config={
-            "State_Name": "State",
-            "District_Name": "District",
-            "Village_City_Name": "Village / City",
-            "Link": st.column_config.LinkColumn("Source", display_text="View →"),
-        },
-        hide_index=True,
-        width="stretch",
-        height=380,
+# ================================================================ MAP ======
+with tab_map:
+    st.markdown('<div class="section-title">Survey Map</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="section-hint">Amber pins are points a news article suggests may be '
+        'non-functional. Teal pins carry no failure signal — that means "no bad news found," '
+        'not "confirmed working." Clusters show counts; zoom in to break them apart.</div>',
+        unsafe_allow_html=True
     )
 
-st.markdown(f"""
-<div class="footnote">
-<strong>Reading this atlas honestly:</strong> These points are drinking-water infrastructure tagged
-in OpenStreetMap (wells, taps, water points, RO/vending units), not an official Water ATM census —
-India has no such public dataset. Maharashtra and Kerala dominate the counts because volunteer mapping
-is denser there, not because service is denser there. Flagged points come from automated keyword
-matching against news text and require manual verification before any operational decision is made
-on them.
+    if total == 0:
+        st.warning("No points match the current filters.")
+    else:
+        if total > 8000:
+            st.caption(
+                f"Rendering all {total:,} filtered points — clustering keeps this readable, "
+                "but narrow the filters on the left for a snappier map."
+            )
+        map_html = build_leaflet_map(tuple(states), tuple(sources), tuple(owners), flagged_only)
+        components.html(map_html, height=615, scrolling=False)
+
+
+# ================================================================ ANALYTICS =
+with tab_analytics:
+    st.markdown('<div class="section-title">Distribution &amp; Composition</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-hint">All charts react to the sidebar filters.</div>',
+                unsafe_allow_html=True)
+
+    c1, c2, c3 = st.columns([1.3, 1, 1])
+
+    with c1:
+        st.markdown('<div class="section-title" style="font-size:15px;">Top Districts</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-hint">By mapped point count — reflects OSM contributor '
+                    'density as much as real infrastructure.</div>', unsafe_allow_html=True)
+        dist_counts = (filtered.dropna(subset=["District_Name"])
+                       .groupby(["State_Name", "District_Name"]).size()
+                       .reset_index(name="count").sort_values("count", ascending=False).head(12))
+        if not dist_counts.empty:
+            fig = go.Figure(go.Bar(
+                x=dist_counts["count"], y=dist_counts["District_Name"] + " (" + dist_counts["State_Name"] + ")",
+                orientation="h", marker_color=TEAL,
+            ))
+            fig.update_layout(
+                height=380, margin=dict(l=0, r=10, t=10, b=10),
+                plot_bgcolor=PAPER2, paper_bgcolor=PAPER2,
+                yaxis=dict(autorange="reversed", tickfont=dict(size=11)),
+                font=dict(family="IBM Plex Mono, monospace", size=11, color=SLATE),
+            )
+            st.plotly_chart(fig, width="stretch")
+        else:
+            st.info("No district-level data for current filters.")
+
+    with c2:
+        st.markdown('<div class="section-title" style="font-size:15px;">Water Source Tags</div>', unsafe_allow_html=True)
+        src_counts = filtered["Water_Source"].value_counts().head(6)
+        fig = go.Figure(go.Pie(
+            labels=src_counts.index, values=src_counts.values, hole=0.62,
+            marker_colors=[TEAL, TEAL_BRIGHT, "#5FBCAE", AMBER, AMBER_BRIGHT, "#8FA8A4"],
+        ))
+        fig.update_layout(height=330, margin=dict(l=0, r=0, t=10, b=0),
+                           paper_bgcolor=PAPER2, showlegend=True,
+                           legend=dict(font=dict(size=10)))
+        st.plotly_chart(fig, width="stretch")
+
+    with c3:
+        st.markdown('<div class="section-title" style="font-size:15px;">Ownership Type</div>', unsafe_allow_html=True)
+        own_counts = filtered["Ownership_Type"].value_counts().head(5)
+        fig = go.Figure(go.Pie(
+            labels=own_counts.index, values=own_counts.values, hole=0.62,
+            marker_colors=[TEAL, TEAL_BRIGHT, "#5FBCAE", AMBER, AMBER_BRIGHT],
+        ))
+        fig.update_layout(height=330, margin=dict(l=0, r=0, t=10, b=0),
+                           paper_bgcolor=PAPER2, showlegend=True,
+                           legend=dict(font=dict(size=10)))
+        st.plotly_chart(fig, width="stretch")
+
+    st.write("")
+    st.markdown('<div class="section-title">Mapped Points by State</div>', unsafe_allow_html=True)
+    state_counts = filtered["State_Name"].value_counts().head(15)
+    fig = go.Figure(go.Bar(x=state_counts.index, y=state_counts.values, marker_color=TEAL))
+    fig.update_layout(
+        height=320, margin=dict(l=0, r=0, t=10, b=0),
+        plot_bgcolor=PAPER2, paper_bgcolor=PAPER2,
+        font=dict(family="IBM Plex Mono, monospace", size=11, color=SLATE),
+    )
+    st.plotly_chart(fig, width="stretch")
+
+    st.write("")
+    a1, a2 = st.columns(2)
+    with a1:
+        st.markdown('<div class="section-title" style="font-size:15px;">Field Completeness Spread</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-hint">How complete each record\'s fields are, across the current selection.</div>',
+                    unsafe_allow_html=True)
+        if total > 0:
+            fig = go.Figure(go.Histogram(
+                x=filtered["data_completeness_pct"], nbinsx=20, marker_color=TEAL_BRIGHT,
+            ))
+            fig.update_layout(
+                height=300, margin=dict(l=0, r=0, t=10, b=0),
+                plot_bgcolor=PAPER2, paper_bgcolor=PAPER2,
+                xaxis_title="Completeness %", yaxis_title="Points",
+                font=dict(family="IBM Plex Mono, monospace", size=10.5, color=SLATE),
+            )
+            st.plotly_chart(fig, width="stretch")
+        else:
+            st.info("No data for current filters.")
+
+    with a2:
+        st.markdown('<div class="section-title" style="font-size:15px;">Flagged Share by Ownership</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-hint">Which ownership types carry the largest share of flagged signals.</div>',
+                    unsafe_allow_html=True)
+        if total > 0:
+            grp = filtered.groupby("Ownership_Type")["Flagged"].agg(["sum", "count"]).reset_index()
+            grp["rate"] = (grp["sum"] / grp["count"] * 100).round(1)
+            grp = grp.sort_values("rate", ascending=False).head(8)
+            fig = go.Figure(go.Bar(
+                x=grp["rate"], y=grp["Ownership_Type"], orientation="h", marker_color=AMBER,
+            ))
+            fig.update_layout(
+                height=300, margin=dict(l=0, r=10, t=10, b=10),
+                plot_bgcolor=PAPER2, paper_bgcolor=PAPER2,
+                xaxis_title="Flagged %",
+                yaxis=dict(autorange="reversed", tickfont=dict(size=11)),
+                font=dict(family="IBM Plex Mono, monospace", size=10.5, color=SLATE),
+            )
+            st.plotly_chart(fig, width="stretch")
+        else:
+            st.info("No data for current filters.")
+
+
+# ================================================================ FLAGGED ==
+with tab_flagged:
+    st.markdown('<div class="section-title">Flagged Field Reports</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-hint">Every row is a specific water point where a matched '
+                'news article used language suggesting it may be broken, dry, or abandoned. '
+                'Click through and verify — this is a lead list, not a finding.</div>',
+                unsafe_allow_html=True)
+
+    flagged_df = filtered[filtered["Flagged"]].copy()
+
+    search = st.text_input("Search by state, district, or village", "", placeholder="e.g. Maharashtra, Pune, Wardha…")
+    if search:
+        mask = (
+            flagged_df["State_Name"].str.contains(search, case=False, na=False)
+            | flagged_df["District_Name"].str.contains(search, case=False, na=False)
+            | flagged_df["Village_City_Name"].str.contains(search, case=False, na=False)
+        )
+        flagged_df = flagged_df[mask]
+
+    if flagged_df.empty:
+        st.info("No flagged points match the current filters.")
+    else:
+        flagged_df["Link"] = flagged_df["news_url"].where(
+            flagged_df["news_url"].str.len() > 0, flagged_df["osm_url"]
+        )
+        display_cols = ["State_Name", "District_Name", "Village_City_Name",
+                         "Latitude", "Longitude", "Link"]
+        st.caption(f"{len(flagged_df):,} flagged points match your filters and search.")
+        st.dataframe(
+            flagged_df[display_cols],
+            column_config={
+                "State_Name": "State",
+                "District_Name": "District",
+                "Village_City_Name": "Village / City",
+                "Link": st.column_config.LinkColumn("Source", display_text="View →"),
+            },
+            hide_index=True,
+            width="stretch",
+            height=420,
+        )
+        st.download_button(
+            "⬇ Download flagged report (CSV)",
+            data=flagged_df[display_cols].to_csv(index=False).encode("utf-8"),
+            file_name="water_atm_flagged_report.csv",
+            mime="text/csv",
+        )
+
+
+# ================================================================ METHOD ===
+with tab_method:
+    st.markdown('<div class="section-title">How This Atlas Was Built</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-hint">A research pipeline stitched together from three public sources — '
+                'no official registry exists to pull from directly.</div>', unsafe_allow_html=True)
+
+    steps = [
+        ("Collect", "Pulled drinking-water infrastructure tags (wells, taps, RO/vending units, water points) "
+                     "from the OpenStreetMap Overpass API across every Indian state and UT."),
+        ("Cross-check", "Matched each point against data.gov.in datasets and Google News RSS coverage, "
+                         "scanning article text for language suggesting failure, disrepair, or abandonment."),
+        ("Correct", "Ran spatial joins against India's official district-boundary shapefiles to fix "
+                     "mismatched or missing state/district assignments in the raw tags."),
+        ("Deduplicate", "Collapsed overlapping OSM entries and near-duplicate coordinates down to a clean, "
+                         "one-row-per-point dataset."),
+        ("Publish", "Exported to a Power BI-ready format and this Streamlit atlas, with every point "
+                     "tagged for completeness and flag status."),
+    ]
+    for i, (title, desc) in enumerate(steps, start=1):
+        st.markdown(f"""<div class="step-card">
+            <div class="step-num">{i}</div>
+            <div><div class="step-title">{title}</div><div class="step-desc">{desc}</div></div>
+            </div>""", unsafe_allow_html=True)
+
+    st.write("")
+    st.markdown('<div class="section-title">Data Sources</div>', unsafe_allow_html=True)
+    st.markdown("""
+    <span class="badge">OpenStreetMap Overpass API</span>
+    <span class="badge">data.gov.in</span>
+    <span class="badge">Google News RSS</span>
+    <span class="badge">India District Boundaries (spatial join)</span>
+    """, unsafe_allow_html=True)
+
+    st.write("")
+    st.markdown(f"""
+    <div class="footnote">
+    <strong>Reading this atlas honestly:</strong> These points are drinking-water infrastructure tagged
+    in OpenStreetMap (wells, taps, water points, RO/vending units), not an official Water ATM census —
+    India has no such public dataset. Maharashtra and Kerala dominate the counts because volunteer mapping
+    is denser there, not because service is denser there. Flagged points come from automated keyword
+    matching against news text and require manual verification before any operational decision is made
+    on them.
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# ------------------------------------------------------------------ FOOTER -
+st.markdown("""
+<div class="footer">
+  <div>Water ATM Downtime Atlas — a research signal, not an official census.</div>
+  <div>
+    Built by Koushik Garg ·
+    <a href="https://github.com/koushikgarg11" target="_blank">GitHub</a> ·
+    <a href="https://www.linkedin.com" target="_blank">LinkedIn</a>
+  </div>
 </div>
 """, unsafe_allow_html=True)
