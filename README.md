@@ -1,4 +1,4 @@
-# Water ATM Downtime Atlas — Merged Edition
+# Water ATM Downtime Atlas 
 
 This merges the two previous versions instead of choosing between them:
 
