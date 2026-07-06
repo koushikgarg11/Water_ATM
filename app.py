@@ -50,8 +50,8 @@ footer {{ visibility: hidden; }}
 
 /* ---- top masthead ---- */
 .masthead {{
-    background: {INK}; color: #EAF3F1; padding: 30px 38px 0; border-radius: 8px 8px 0 0;
-    margin-bottom: 0;
+    background: {INK}; color: #EAF3F1; padding: 30px 38px 26px; border-radius: 8px;
+    margin-bottom: 20px;
 }}
 .masthead__row {{ display:flex; justify-content:space-between; align-items:flex-start; gap: 24px; flex-wrap:wrap; }}
 .masthead .eyebrow {{
@@ -72,7 +72,7 @@ footer {{ visibility: hidden; }}
 
 /* ---- tab bar styled as a real site nav ---- */
 .stTabs [data-baseweb="tab-list"] {{
-    background: {INK}; gap: 2px; padding: 0 38px; border-radius: 0 0 8px 8px;
+    background: {INK}; gap: 2px; padding: 0 38px; border-radius: 8px;
     border-bottom: 3px solid {TEAL}; margin-bottom: 22px;
 }}
 .stTabs [data-baseweb="tab"] {{
