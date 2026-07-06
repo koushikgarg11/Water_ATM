@@ -104,8 +104,35 @@ footer {{ visibility: hidden; }}
     background: {PAPER2}; border:1px solid {LINE}; color:{SLATE}; padding:3px 10px; border-radius:14px; margin: 2px 4px 2px 0;
 }}
 hr.divider {{ border: none; border-top: 1px solid {LINE}; margin: 22px 0; }}
+
+.site-footer {{
+    margin-top: 32px; padding: 16px 4px 4px; border-top: 1px solid {LINE};
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;
+}}
+.site-footer__credit {{
+    font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: {SLATE};
+}}
+.site-footer__links a {{
+    font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: {TEAL};
+    text-decoration: none; margin-left: 16px;
+}}
+.site-footer__links a:hover {{ text-decoration: underline; }}
 </style>
 """, unsafe_allow_html=True)
+
+GITHUB_URL = "https://github.com/koushikgarg11"
+LINKEDIN_URL = "https://www.linkedin.com/in/koushik-garg-b034442a9/"
+
+def render_footer():
+    st.markdown(f"""
+    <div class="site-footer">
+      <span class="site-footer__credit">Prepared by <b>Koushik</b> · Water ATM Downtime Atlas</span>
+      <span class="site-footer__links">
+        <a href="{GITHUB_URL}" target="_blank" rel="noopener">GitHub ↗</a>
+        <a href="{LINKEDIN_URL}" target="_blank" rel="noopener">LinkedIn ↗</a>
+      </span>
+    </div>
+    """, unsafe_allow_html=True)
 
 
 # ------------------------------------------------------------- DATA LOAD ---
@@ -231,6 +258,8 @@ with tab_overview:
                             ("Tagged as wells", f"{(filtered['Water_Source']=='water_well').mean()*100:.1f}%" if total else "—")]:
             st.markdown(f"<span class='pill'>{label}: {val}</span>", unsafe_allow_html=True)
 
+    render_footer()
+
 
 # ============================================================== MAP EXPLORER
 with tab_map:
@@ -346,6 +375,8 @@ with tab_map:
             unsafe_allow_html=True,
         )
 
+    render_footer()
+
 
 # =================================================================ANALYTICS=
 with tab_analytics:
@@ -415,6 +446,8 @@ with tab_analytics:
         else:
             st.info(f"No district-level detail recorded for {pick} in the current filter.")
 
+    render_footer()
+
 
 # ================================================================ FLAGGED ==
 with tab_flagged:
@@ -448,6 +481,8 @@ with tab_flagged:
             hide_index=True, width="stretch", height=420,
         )
         st.caption(f"{len(flagged_df):,} flagged point(s) shown.")
+
+    render_footer()
 
 
 # ================================================================== ABOUT ==
@@ -504,3 +539,5 @@ with tab_about:
     <b>Repo:</b> this dashboard's source lives alongside its data for full reproducibility.
     </p></div>
     """, unsafe_allow_html=True)
+
+    render_footer()
