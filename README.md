@@ -4,7 +4,7 @@
 
 **Mapping India's drinking-water infrastructure — and flagging where it's gone dark**
 
-[**🔗 View Live Dashboard**](https://wateratm.streamlit.app) · [Report an Issue](#) · [Author](https://github.com/koushikgarg11)
+[**🔗 View Live Dashboard**](https://wateratm.streamlit.app) · [Author](https://github.com/koushikgarg11)
 
 </div>
 
@@ -121,6 +121,32 @@ If that tradeoff doesn't suit your use case, the pure-pydeck Streamlit version (
 
 <div align="center">
 
-Built by [**Koushik Garg**](https://github.com/koushikgarg11) · Data Analyst Intern @ Analytics Career Connect
+### 💧 If this atlas helped you find water infrastructure gaps, consider starring the repo
+
+<sub>It's the easiest way to tell me it was useful — and it helps the next person searching for this find it faster.</sub>
+
+<br>
+
+| 🌐 Live Dashboard | 💻 Source | 🔗 Connect |
+|:---:|:---:|:---:|
+| [wateratm.streamlit.app](https://wateratm.streamlit.app) | [GitHub](https://github.com/koushikgarg11) | [LinkedIn](https://linkedin.com/in/koushikgarg11) |
+
+<br>
+
+<details>
+<summary><b>🧭 Behind the build</b></summary>
+<br>
+
+This started as two competing prototypes — a fast-but-unreadable `pydeck` map and a readable-but-static Leaflet dashboard — and instead of picking a winner, this version makes them work together. That "merge, don't choose" instinct is basically the whole design philosophy of this repo.
+
+36,856 points. Zero official registries. One research signal worth investigating further.
+
+</details>
+
+<br>
+
+**Built by Koushik Garg** · Data Analytics · Civic-Tech Projects
+
+*Have data that could sharpen this atlas? Open an issue — always looking to make the signal stronger.*
 
 </div>
