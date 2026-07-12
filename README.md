@@ -129,7 +129,7 @@ If that tradeoff doesn't suit your use case, the pure-pydeck Streamlit version (
 
 | 🌐 Live Dashboard | 💻 Source | 🔗 Connect |
 |:---:|:---:|:---:|
-| [wateratm.streamlit.app](https://wateratm.streamlit.app) | [GitHub](https://github.com/koushikgarg11) | [LinkedIn](https://linkedin.com/in/koushikgarg11) |
+| [wateratm.streamlit.app](https://wateratm.streamlit.app) | [GitHub](https://github.com/koushikgarg11) | [LinkedIn](https://www.linkedin.com/in/koushik-garg-b034442a9/) |
 
 <br>
 
