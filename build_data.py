@@ -5,7 +5,8 @@ Usage (Git Bash, inside water_atm_streamlit/):
     python build_data.py path/to/water_atm_master_corrected.xlsx
 """
 import sys
-import os
+from pathlib import Path
+
 import pandas as pd
 
 
@@ -19,7 +20,7 @@ def split_urls(u):
 
 
 def main(xlsx_path):
-    df = pd.read_excel(xlsx_path)
+    df = pd.read_excel(xlsx_path, engine="openpyxl")
     df[["osm_url", "news_url"]] = df["Source_URL"].apply(lambda u: pd.Series(split_urls(u)))
     df["Flagged"] = df["Current_Operational_Status"] != "Unknown"
     df["District_Name"] = df["District_Name"].replace("Unknown", pd.NA)
@@ -31,9 +32,9 @@ def main(xlsx_path):
             "data_completeness_pct"]
     out = df[keep].copy()
 
-    out_dir = os.path.join(os.path.dirname(__file__), "data")
-    os.makedirs(out_dir, exist_ok=True)
-    out_path = os.path.join(out_dir, "water_points.parquet")
+    out_dir = Path(__file__).resolve().parent / "data"
+    out_dir.mkdir(exist_ok=True)
+    out_path = out_dir / "water_points.parquet"
     out.to_parquet(out_path, index=False)
     print(f"Rebuilt {out_path}: {len(out)} rows, {out['Flagged'].sum()} flagged.")
 

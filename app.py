@@ -1,7 +1,12 @@
+
 import json
+import os
+from pathlib import Path
+
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
+import streamlit.components.v1 as components
 
 # ---------------------------------------------------------------- CONFIG ---
 st.set_page_config(
@@ -20,6 +25,52 @@ SLATE = "#4B5A5A"
 PAPER = "#ECEAE0"
 PAPER2 = "#F5F4EC"
 LINE = "#C9C6B6"
+
+
+def authenticate(username: str, password: str) -> bool:
+    expected_user = os.getenv("WATER_ATM_USERNAME", "admin")
+    expected_password = os.getenv("WATER_ATM_PASSWORD", "wateratm2026")
+    return username == expected_user and password == expected_password
+
+
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+if not st.session_state.authenticated:
+    st.markdown(
+        """
+        <style>
+        .login-shell { max-width: 480px; margin: 48px auto; padding: 28px; background: #F5F4EC; border: 1px solid #C9C6B6; border-radius: 8px; }
+        .login-title { font-family: 'Space Grotesk', sans-serif; font-size: 28px; color: #0C2124; margin-bottom: 8px; }
+        .login-subtitle { color: #4B5A5A; margin-bottom: 18px; }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        """
+        <div class="login-shell">
+            <div class="login-title">Water ATM Dashboard Access</div>
+            <div class="login-subtitle">Sign in to view the atlas and reports.</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    with st.form("login_form"):
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+        submitted = st.form_submit_button("Log in")
+
+    if submitted:
+        if authenticate(username, password):
+            st.session_state.authenticated = True
+            st.success("Logged in successfully.")
+            st.rerun()
+        else:
+            st.error("Invalid username or password.")
+
+    st.stop()
 
 st.markdown(f"""
 <style>
@@ -136,9 +187,14 @@ def render_footer():
 
 
 # ------------------------------------------------------------- DATA LOAD ---
+BASE_DIR = Path(__file__).resolve().parent
+DATA_PATH = BASE_DIR / "data" / "water_points.parquet"
+
+
 @st.cache_data
 def load_data():
-    return pd.read_parquet("data/water_points.parquet")
+    df = pd.read_parquet("data/water_points.parquet")
+    return df
 
 df = load_data()
 
