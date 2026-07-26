@@ -176,27 +176,40 @@ footer {{ visibility: hidden; }}
 [data-testid="stSidebar"] * {{ color: #EAF3F1 !important; }}
 [data-testid="stSidebar"] hr {{ border-color: rgba(234,243,241,0.15); }}
 
-/* ---- top masthead ---- */
+/* ---- top masthead (refreshed) ---- */
 .masthead {{
-    background: {INK}; color: #EAF3F1; padding: 30px 38px 26px; border-radius: 8px;
-    margin-bottom: 20px;
+    background: linear-gradient(135deg, {INK}, {TEAL});
+    color: #EAF3F1; padding: 34px 36px; border-radius: 12px; margin-bottom: 22px;
+    position: relative; overflow: hidden; box-shadow: 0 8px 30px rgba(12,33,36,0.12);
 }}
-.masthead__row {{ display:flex; justify-content:space-between; align-items:flex-start; gap: 24px; flex-wrap:wrap; }}
+.masthead__row {{ display:grid; grid-template-columns: 1fr auto; gap: 18px; align-items:center; }}
 .masthead .eyebrow {{
     font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .12em;
-    color: {TEAL_BRIGHT}; text-transform: uppercase; margin-bottom: 8px;
+    color: {TEAL_BRIGHT}; text-transform: uppercase; margin-bottom: 6px;
 }}
 .masthead h1 {{
-    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 38px;
-    margin: 0 0 8px; line-height: 1.15; color: #fff;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 42px;
+    margin: 0 0 6px; line-height: 1.05; color: #fff; letter-spacing: -0.02em;
 }}
-.masthead p {{ color: #C3D6D2; max-width: 620px; font-size: 14px; margin:0 0 22px; }}
+.masthead p {{ color: rgba(234,243,241,0.9); max-width: 720px; font-size: 15px; margin:0 0 14px; }}
 .masthead__badge {{
-    font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: #9FB6B2;
-    border: 1px solid rgba(234,243,241,0.25); border-radius: 20px; padding: 6px 14px;
-    white-space: nowrap; text-align:center;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #EAF3F1;
+    border: 1px solid rgba(234,243,241,0.08); border-radius: 999px; padding: 8px 14px;
+    background: rgba(255,255,255,0.04);
 }}
-.masthead__badge b {{ color: {TEAL_BRIGHT}; display:block; font-size:15px; font-family:'Space Grotesk',sans-serif; }}
+.masthead__badge b {{ color: {TEAL_BRIGHT}; display:block; font-size:14px; font-family:'Space Grotesk',sans-serif; }}
+
+/* decorative floating droplet */
+.masthead::after {{
+    content: ""; position: absolute; right: -60px; top: -40px; width: 220px; height: 220px;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.06), rgba(255,255,255,0.02) 30%, transparent 60%);
+    transform: rotate(20deg); opacity: 0.9; pointer-events: none; filter: blur(8px);
+}}
+
+@media (max-width: 880px) {{
+    .masthead__row {{ grid-template-columns: 1fr; gap: 10px; }}
+    .masthead h1 {{ font-size: 30px; }}
+}}
 
 /* ---- tab bar styled as a real site nav ---- */
 .stTabs [data-baseweb="tab-list"] {{
@@ -441,65 +454,90 @@ with tab_map:
             data_json = json.dumps(records, separators=(",", ":"))
 
             return f"""
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css">
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css">
-            <style>
-              html, body {{ margin:0; padding:0; }}
-              #map {{ height: 560px; width: 100%; border-radius: 4px; }}
-              .wa-pin {{ border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display:block; }}
-              .wa-pin--teal {{ background: #2F9C8F; border: 2px solid #0C2124; }}
-              .wa-pin--amber {{ background: #E08F3C; border: 2px solid #0C2124; }}
-              .leaflet-popup-content {{ font-family: Inter, sans-serif; font-size: 13px; }}
-            </style>
-            <div id="map"></div>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
-            <script>
-              const points = {data_json};
-              const map = L.map('map', {{ preferCanvas: true }}).setView([22.9, 79.5], 4);
-              L.tileLayer('https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png', {{
-                attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 18,
-              }}).addTo(map);
+                        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+                        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css">
+                        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css">
+                        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-search/2.9.9/leaflet-search.min.css">
+                        <style>
+                            html, body {{ margin:0; padding:0; }}
+                            #map {{ height: 560px; width: 100%; border-radius: 8px; box-shadow: 0 6px 18px rgba(12,33,36,0.08); }}
+                            .wa-pin {{ border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display:block; box-shadow: 0 1px 2px rgba(0,0,0,0.12); }}
+                            .wa-pin--teal {{ background: #2F9C8F; border: 2px solid #0C2124; }}
+                            .wa-pin--amber {{ background: #E08F3C; border: 2px solid #0C2124; }}
+                            .leaflet-popup-content {{ font-family: Inter, sans-serif; font-size: 13px; }}
+                            .leaflet-control-search {{ box-shadow: 0 6px 14px rgba(12,33,36,0.12); border-radius: 6px; }}
+                        </style>
+                        <div id="map"></div>
+                        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+                        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
+                        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-search/2.9.9/leaflet-search.min.js"></script>
+                        <script>
+                            const points = {data_json};
+                            const map = L.map('map', {{ preferCanvas: true }}).setView([22.9, 79.5], 4);
+                            L.tileLayer('https://{{s}}.basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png', {{
+                                attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 18,
+                            }}).addTo(map);
 
-              const cluster = L.markerClusterGroup({{
-                maxClusterRadius: 45,
-                iconCreateFunction: function(c) {{
-                  const markers = c.getAllChildMarkers();
-                  const nFlag = markers.filter(m => m.options.flagged).length;
-                  const size = markers.length > 500 ? 44 : markers.length > 50 ? 36 : 28;
-                  const color = nFlag > 0 ? '#E08F3C' : '#2F9C8F';
-                  return L.divIcon({{
-                    html: `<div style="background:${{color}};width:${{size}}px;height:${{size}}px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#0C2124;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:11px;border:2px solid #0C2124;opacity:0.92;">${{markers.length}}</div>`,
-                    className: '', iconSize: [size, size],
-                  }});
-                }}
-              }});
+                            const cluster = L.markerClusterGroup({{
+                                maxClusterRadius: 45,
+                                iconCreateFunction: function(c) {{
+                                    const markers = c.getAllChildMarkers();
+                                    const nFlag = markers.filter(m => m.options.flagged).length;
+                                    const size = markers.length > 500 ? 44 : markers.length > 50 ? 36 : 28;
+                                    const color = nFlag > 0 ? '#E08F3C' : '#2F9C8F';
+                                    return L.divIcon({{
+                                        html: `<div style="background:${{color}};width:${{size}}px;height:${{size}}px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#0C2124;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:11px;border:2px solid #0C2124;opacity:0.92;">${{markers.length}}</div>`,
+                                        className: '', iconSize: [size, size],
+                                    }});
+                                }}
+                            }});
 
-              function icon(flag) {{
-                return L.divIcon({{
-                  className: '',
-                  html: `<span class="wa-pin ${{flag ? 'wa-pin--amber' : 'wa-pin--teal'}}" style="width:14px;height:14px;"></span>`,
-                  iconSize: [14, 14], iconAnchor: [7, 14],
-                }});
-              }}
+                            const markersLayer = L.layerGroup();
 
-              points.forEach(p => {{
-                const m = L.marker([p.lat, p.lon], {{ icon: icon(p.f), flagged: p.f }});
-                m.bindPopup(`
-                  <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#4B5A5A;text-transform:uppercase;">${{p.f ? '⚠ Flagged by news signal' : 'No failure signal found'}}</div>
-                  <div style="font-weight:600;margin:4px 0 2px;">${{p.v ? p.v + ', ' : ''}}${{p.d || 'Unknown district'}}</div>
-                  <div style="color:#4B5A5A;margin-bottom:6px;">${{p.st}}</div>
-                  <div style="font-size:12px;color:#4B5A5A;">Source: ${{p.src}} &middot; Owner: ${{p.own}}</div>
-                  ${{p.url ? `<a href="${{p.url}}" target="_blank" rel="noopener" style="font-size:12px;color:#155E5A;">View source →</a>` : ''}}
-                `);
-                cluster.addLayer(m);
-              }});
-              map.addLayer(cluster);
-              if (points.length > 0) {{
-                try {{ map.fitBounds(cluster.getBounds().pad(0.1)); }} catch (e) {{}}
-              }}
-            </script>
+                            function icon(flag) {{
+                                return L.divIcon({{
+                                    className: '',
+                                    html: `<span class="wa-pin ${{flag ? 'wa-pin--amber' : 'wa-pin--teal'}}" style="width:14px;height:14px;"></span>`,
+                                    iconSize: [14, 14], iconAnchor: [7, 14],
+                                }});
+                            }}
+
+                            points.forEach(p => {{
+                                const title = (p.v ? p.v + ', ' : '') + (p.d || '') + ' | ' + p.st;
+                                const m = L.marker([p.lat, p.lon], {{ icon: icon(p.f), flagged: p.f, title: title }});
+                                m.bindPopup(
+                                    '<div style="font-family:IBM Plex Mono,monospace;font-size:10px;color:#4B5A5A;text-transform:uppercase;">' +
+                                        (p.f ? '⚠ Flagged by news signal' : 'No failure signal found') +
+                                    '</div>' +
+                                    '<div style="font-weight:600;margin:4px 0 2px;">' + (p.v ? p.v + ', ' : '') + (p.d || 'Unknown district') + '</div>' +
+                                    '<div style="color:#4B5A5A;margin-bottom:6px;">' + p.st + '</div>' +
+                                    '<div style="font-size:12px;color:#4B5A5A;">Source: ' + p.src + ' · Owner: ' + p.own + '</div>' +
+                                    (p.url ? ('<a href="' + p.url + '" target="_blank" rel="noopener" style="font-size:12px;color:#155E5A;">View source →</a>') : '')
+                                );
+                                cluster.addLayer(m);
+                                markersLayer.addLayer(m);
+                            }});
+
+                            map.addLayer(cluster);
+
+                            // Add search control that looks up markers by their title (village, district, state)
+                            var searchControl = new L.Control.Search({{
+                                layer: markersLayer,
+                                propertyName: 'title',
+                                marker: false,
+                                initial: false,
+                                zoom: 12,
+                                textPlaceholder: 'Search place or district...'
+                            }});
+                            searchControl.on('search:locationfound', function(e) {{
+                                if(e.layer._popup) e.layer.openPopup();
+                            }});
+                            map.addControl(searchControl);
+
+                            if (points.length > 0) {{
+                                try {{ map.fitBounds(cluster.getBounds().pad(0.1)); }} catch (e) {{}}
+                            }}
+                        </script>
             """
 
         map_html = build_leaflet_map(tuple(states), tuple(sources), tuple(owners), flagged_only)
