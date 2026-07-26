@@ -10,6 +10,8 @@ import streamlit.components.v1 as components
 import hashlib
 import secrets
 from typing import Dict, Any
+from datetime import datetime, timedelta
+import re
 
 # ---------------------------------------------------------------- CONFIG ---
 st.set_page_config(
@@ -65,9 +67,65 @@ def authenticate(username: str, password: str) -> bool:
         entry = users[username]
         return verify_password(password, entry.get("salt", ""), entry.get("hash", ""))
     # fallback to environment credential for first-time admin access
-    expected_user = os.getenv("WATER_ATM_USERNAME", "admin")
-    expected_password = os.getenv("WATER_ATM_PASSWORD", "wateratm2026")
-    return username == expected_user and password == expected_password
+    # Do not use insecure hardcoded defaults; require both env vars to be set.
+    expected_user = os.getenv("WATER_ATM_USERNAME")
+    expected_password = os.getenv("WATER_ATM_PASSWORD")
+    if expected_user and expected_password:
+        return username == expected_user and password == expected_password
+    return False
+
+
+def _is_locked(users: Dict[str, Any], username: str) -> tuple[bool, int]:
+    """Return (locked, seconds_remaining) for a user record."""
+    entry = users.get(username, {})
+    lu = entry.get("locked_until")
+    if not lu:
+        return False, 0
+    try:
+        until = datetime.fromisoformat(lu)
+    except Exception:
+        return False, 0
+    now = datetime.utcnow()
+    if until > now:
+        return True, int((until - now).total_seconds())
+    return False, 0
+
+
+def _record_failed_attempt(users: Dict[str, Any], username: str, limit: int = 5, lock_minutes: int = 15) -> None:
+    entry = users.get(username)
+    if entry is None:
+        return
+    fa = int(entry.get("failed_attempts", 0)) + 1
+    entry["failed_attempts"] = fa
+    if fa >= limit:
+        entry["locked_until"] = (datetime.utcnow() + timedelta(minutes=lock_minutes)).isoformat()
+        entry["failed_attempts"] = 0
+    users[username] = entry
+    save_users(users)
+
+
+def _reset_failed_attempts(users: Dict[str, Any], username: str) -> None:
+    entry = users.get(username)
+    if not entry:
+        return
+    entry.pop("failed_attempts", None)
+    entry.pop("locked_until", None)
+    users[username] = entry
+    save_users(users)
+
+
+def _validate_password_strength(password: str) -> tuple[bool, str]:
+    if len(password) < 8:
+        return False, "Password must be at least 8 characters."
+    if not re.search(r"[A-Z]", password):
+        return False, "Password must include an uppercase letter."
+    if not re.search(r"[a-z]", password):
+        return False, "Password must include a lowercase letter."
+    if not re.search(r"[0-9]", password):
+        return False, "Password must include a number."
+    if not re.search(r"[^A-Za-z0-9]", password):
+        return False, "Password must include a special character."
+    return True, ""
 
 
 def register_user(username: str, password: str) -> tuple[bool, str]:
@@ -119,13 +177,34 @@ if not st.session_state.authenticated:
             submitted = st.form_submit_button("Log in")
 
         if submitted:
-            if authenticate(username, password):
-                st.session_state.authenticated = True
-                st.session_state.user = username
-                st.success("Logged in successfully.")
-                st.rerun()
+            users = load_users()
+            # check account lock for registered users
+            if username in users:
+                locked, secs = _is_locked(users, username)
+                if locked:
+                    mins = max(1, secs // 60)
+                    st.error(f"Account locked due to repeated failures. Try again in {mins} minute(s).")
+                else:
+                    if authenticate(username, password):
+                        _reset_failed_attempts(users, username)
+                        st.session_state.authenticated = True
+                        st.session_state.user = username
+                        st.success("Logged in successfully.")
+                        st.experimental_rerun()
+                    else:
+                        _record_failed_attempt(users, username)
+                        entry = users.get(username, {})
+                        remaining = max(0, 5 - int(entry.get("failed_attempts", 0)))
+                        st.error(f"Invalid username or password. {remaining} attempt(s) remaining before lockout.")
             else:
-                st.error("Invalid username or password.")
+                # Not a registered user: allow env-admin fallback only (do not create user records)
+                if authenticate(username, password):
+                    st.session_state.authenticated = True
+                    st.session_state.user = username
+                    st.success("Logged in successfully.")
+                    st.experimental_rerun()
+                else:
+                    st.error("Invalid username or password.")
 
     else:
         with st.form("register_form"):
@@ -138,14 +217,18 @@ if not st.session_state.authenticated:
             if r_pass != r_pass2:
                 st.error("Passwords do not match.")
             else:
-                ok, msg = register_user(r_user, r_pass)
-                if ok:
-                    st.session_state.authenticated = True
-                    st.session_state.user = r_user
-                    st.success(msg)
-                    st.rerun()
-                else:
+                ok, msg = _validate_password_strength(r_pass)
+                if not ok:
                     st.error(msg)
+                else:
+                    ok2, msg2 = register_user(r_user, r_pass)
+                    if ok2:
+                        st.session_state.authenticated = True
+                        st.session_state.user = r_user
+                        st.success(msg2)
+                        st.experimental_rerun()
+                    else:
+                        st.error(msg2)
 
     st.stop()
 
@@ -295,13 +378,19 @@ df = load_data()
 
 # ------------------------------------------------------------- SIDEBAR -----
 st.sidebar.markdown("### 💧 Water ATM Atlas")
+if st.session_state.get("authenticated"):
+    st.sidebar.success(f"Welcome, {st.session_state.get('user')}")
+    if st.sidebar.button("Logout"):
+        st.session_state.authenticated = False
+        st.session_state.user = None
+        st.experimental_rerun()
 st.sidebar.markdown("<span style='font-family:IBM Plex Mono,monospace;font-size:11px;color:#9FB6B2;'>FILTERS APPLY ACROSS ALL TABS</span>", unsafe_allow_html=True)
 st.sidebar.markdown("---")
 
-states = st.sidebar.multiselect("State / UT", sorted(df["State_Name"].unique()), default=[])
-sources = st.sidebar.multiselect("Water source tag", sorted(df["Water_Source"].unique()), default=[])
-owners = st.sidebar.multiselect("Ownership type", sorted(df["Ownership_Type"].unique()), default=[])
-flagged_only = st.sidebar.checkbox("Flagged points only", value=False)
+states = st.sidebar.multiselect("State / UT", sorted(df["State_Name"].unique()), default=[], key='states_sel')
+sources = st.sidebar.multiselect("Water source tag", sorted(df["Water_Source"].unique()), default=[], key='sources_sel')
+owners = st.sidebar.multiselect("Ownership type", sorted(df["Ownership_Type"].unique()), default=[], key='owners_sel')
+flagged_only = st.sidebar.checkbox("Flagged points only", value=False, key='flagged_only')
 
 st.sidebar.markdown("---")
 st.sidebar.markdown(
@@ -312,6 +401,9 @@ st.sidebar.markdown(
     "</span>", unsafe_allow_html=True,
 )
 
+if "quick_flagged" not in st.session_state:
+    st.session_state.quick_flagged = False
+
 filtered = df.copy()
 if states:
     filtered = filtered[filtered["State_Name"].isin(states)]
@@ -319,7 +411,8 @@ if sources:
     filtered = filtered[filtered["Water_Source"].isin(sources)]
 if owners:
     filtered = filtered[filtered["Ownership_Type"].isin(owners)]
-if flagged_only:
+effective_flagged = bool(flagged_only) or bool(st.session_state.get("quick_flagged", False))
+if effective_flagged:
     filtered = filtered[filtered["Flagged"]]
 
 total = len(filtered)
@@ -358,57 +451,116 @@ tab_overview, tab_map, tab_analytics, tab_flagged, tab_about = st.tabs(
 
 # ================================================================ OVERVIEW =
 with tab_overview:
-    k1, k2, k3, k4, k5 = st.columns(5)
-    for col, val, label, flag in [
-        (k1, f"{total:,}", "mapped points shown", False),
-        (k2, f"{n_states}", "states / UTs", False),
-        (k3, f"{n_districts}", "districts", False),
-        (k4, f"{n_flagged}", "flagged signals", True),
-        (k5, f"{completeness:.1f}%", "avg. field completeness", False),
-    ]:
-        cls = "kpi-value kpi-value--flag" if flag else "kpi-value"
-        col.markdown(f"""<div class="kpi-card"><div class="{cls}">{val}</div>
-            <div class="kpi-label">{label}</div></div>""", unsafe_allow_html=True)
+        # Quick filter toolbar
+        q1, q2, q3 = st.columns([1, 1, 1])
+        with q1:
+                if st.button("Toggle flagged only (quick)"):
+                        st.session_state.quick_flagged = not st.session_state.quick_flagged
+                        st.experimental_rerun()
+        with q2:
+                if st.button("Clear filters"):
+                        st.session_state.states_sel = []
+                        st.session_state.sources_sel = []
+                        st.session_state.owners_sel = []
+                        st.session_state.flagged_only = False
+                        st.session_state.quick_flagged = False
+                        st.experimental_rerun()
+        with q3:
+                st.write("")
 
-    st.markdown("<hr class='divider'>", unsafe_allow_html=True)
-
-    oc1, oc2 = st.columns([1.4, 1])
-    with oc1:
-        st.markdown('<div class="section-title">Where the record is thickest</div>', unsafe_allow_html=True)
-        st.markdown('<div class="section-hint">Top 10 states by mapped point count in the current filter.</div>', unsafe_allow_html=True)
-        top_states = filtered["State_Name"].value_counts().head(10)
-        fig = go.Figure(go.Bar(
-            x=top_states.values, y=top_states.index, orientation="h", marker_color=TEAL,
-        ))
-        fig.update_layout(height=340, margin=dict(l=0, r=10, t=6, b=6),
-                           plot_bgcolor=PAPER2, paper_bgcolor=PAPER2,
-                           yaxis=dict(autorange="reversed", tickfont=dict(size=12)),
-                           font=dict(family="IBM Plex Mono, monospace", size=11, color=SLATE))
-        st.plotly_chart(fig, width="stretch")
-
-    with oc2:
-        st.markdown('<div class="section-title">At a glance</div>', unsafe_allow_html=True)
-        top3 = filtered["State_Name"].value_counts().head(3)
-        top_state_txt = ", ".join(f"{s} ({c:,})" for s, c in top3.items()) if len(top3) else "—"
-        most_common_source = filtered["Water_Source"].value_counts().idxmax() if total else "—"
-        flag_rate = (n_flagged / total * 100) if total else 0
-        st.markdown(f"""
-        <div class="card">
-          <p class="footnote">
-          <b>Leading states:</b> {top_state_txt}<br><br>
-          <b>Most common source tag:</b> {most_common_source.replace('_',' ')}<br><br>
-          <b>Flag rate in current view:</b> {flag_rate:.2f}% of points carry a news-derived non-functional signal<br><br>
-          <b>Reading tip:</b> a high point count for a state means OSM mapping is dense there —
-          it is not a proxy for water access quality. See Methodology for why.
-          </p>
+        # Animated KPI cards (embedded HTML for smooth count-up)
+        kpi_data = {
+                "total": total,
+                "states": n_states,
+                "districts": n_districts,
+                "flagged": n_flagged,
+                "completeness": round(completeness, 1),
+        }
+        kpi_html = """
+        <style>
+        .kpi-row { display:flex; gap:14px; margin-bottom:12px; }
+        .kpi-card { background:__PAPER2__; border:1px solid __LINE__; border-radius:8px; padding:14px 16px; flex:1; text-align:left; }
+        .kpi-label { font-family: 'IBM Plex Mono', monospace; font-size:11px; color:__SLATE__; margin-top:6px; text-transform:uppercase; }
+        .kpi-value { font-family: 'Space Grotesk', sans-serif; font-size:28px; font-weight:700; color:__INK__; }
+        .kpi-value.flag { color: __AMBER__; }
+        </style>
+        <div class="kpi-row">
+            <div class="kpi-card"><div class="kpi-value" data-target="__TOTAL__">0</div><div class="kpi-label">mapped points shown</div></div>
+            <div class="kpi-card"><div class="kpi-value" data-target="__STATES__">0</div><div class="kpi-label">states / UTs</div></div>
+            <div class="kpi-card"><div class="kpi-value" data-target="__DISTRICTS__">0</div><div class="kpi-label">districts</div></div>
+            <div class="kpi-card"><div class="kpi-value flag" data-target="__FLAGGED__">0</div><div class="kpi-label">flagged signals</div></div>
+            <div class="kpi-card"><div class="kpi-value" data-target="__COMPLETENESS__">0</div><div class="kpi-label">avg. field completeness</div></div>
         </div>
-        """, unsafe_allow_html=True)
-        st.markdown("<br>", unsafe_allow_html=True)
-        for label, val in [("Public ownership", f"{(filtered['Ownership_Type']=='Public').mean()*100:.1f}%" if total else "—"),
-                            ("Tagged as wells", f"{(filtered['Water_Source']=='water_well').mean()*100:.1f}%" if total else "—")]:
-            st.markdown(f"<span class='pill'>{label}: {val}</span>", unsafe_allow_html=True)
+        <script>
+        function animate(el, target, isPct){
+            var start = 0; var dur = 900; var startTime = performance.now();
+            function step(now){
+                var t = Math.min(1, (now - startTime) / dur);
+                var value = Math.floor(t * target);
+                el.innerText = isPct ? ( (value/10).toFixed(1) + '%' ) : value.toLocaleString();
+                if(t < 1) requestAnimationFrame(step);
+                else if(isPct) el.innerText = target.toFixed(1) + '%';
+            }
+            requestAnimationFrame(step);
+        }
+        document.querySelectorAll('.kpi-value').forEach(function(el){
+            var target = parseFloat(el.getAttribute('data-target'));
+            var isPct = el.parentElement.nextElementSibling && el.parentElement.nextElementSibling.innerText.indexOf('completeness') !== -1;
+            animate(el, isPct ? target*10 : target, isPct);
+        });
+        </script>
+        """
+        kpi_html = kpi_html.replace('__TOTAL__', str(kpi_data['total']))
+        kpi_html = kpi_html.replace('__STATES__', str(kpi_data['states']))
+        kpi_html = kpi_html.replace('__DISTRICTS__', str(kpi_data['districts']))
+        kpi_html = kpi_html.replace('__FLAGGED__', str(kpi_data['flagged']))
+        kpi_html = kpi_html.replace('__COMPLETENESS__', str(kpi_data['completeness']))
+        kpi_html = kpi_html.replace('__PAPER2__', PAPER2)
+        kpi_html = kpi_html.replace('__LINE__', LINE)
+        kpi_html = kpi_html.replace('__SLATE__', SLATE)
+        kpi_html = kpi_html.replace('__INK__', INK)
+        kpi_html = kpi_html.replace('__AMBER__', AMBER)
+        components.html(kpi_html, height=140)
 
-    render_footer()
+        st.markdown("<hr class='divider'>", unsafe_allow_html=True)
+
+        oc1, oc2 = st.columns([1.4, 1])
+        with oc1:
+            st.markdown('<div class="section-title">Where the record is thickest</div>', unsafe_allow_html=True)
+            st.markdown('<div class="section-hint">Top 10 states by mapped point count in the current filter.</div>', unsafe_allow_html=True)
+            top_states = filtered["State_Name"].value_counts().head(10)
+            fig = go.Figure(go.Bar(
+                x=top_states.values, y=top_states.index, orientation="h", marker_color=TEAL,
+            ))
+            fig.update_layout(height=340, margin=dict(l=0, r=10, t=6, b=6),
+                               plot_bgcolor=PAPER2, paper_bgcolor=PAPER2,
+                               yaxis=dict(autorange="reversed", tickfont=dict(size=12)),
+                               font=dict(family="IBM Plex Mono, monospace", size=11, color=SLATE))
+            st.plotly_chart(fig, width="stretch")
+
+        with oc2:
+            st.markdown('<div class="section-title">At a glance</div>', unsafe_allow_html=True)
+            top3 = filtered["State_Name"].value_counts().head(3)
+            top_state_txt = ", ".join(f"{s} ({c:,})" for s, c in top3.items()) if len(top3) else "—"
+            most_common_source = filtered["Water_Source"].value_counts().idxmax() if total else "—"
+            flag_rate = (n_flagged / total * 100) if total else 0
+            st.markdown(f"""
+            <div class="card">
+              <p class="footnote">
+              <b>Leading states:</b> {top_state_txt}<br><br>
+              <b>Most common source tag:</b> {most_common_source.replace('_',' ')}<br><br>
+              <b>Flag rate in current view:</b> {flag_rate:.2f}% of points carry a news-derived non-functional signal<br><br>
+              <b>Reading tip:</b> a high point count for a state means OSM mapping is dense there —
+              it is not a proxy for water access quality. See Methodology for why.
+              </p>
+            </div>
+            """, unsafe_allow_html=True)
+            st.markdown("<br>", unsafe_allow_html=True)
+            for label, val in [("Public ownership", f"{(filtered['Ownership_Type']=='Public').mean()*100:.1f}%" if total else "—"),
+                                ("Tagged as wells", f"{(filtered['Water_Source']=='water_well').mean()*100:.1f}%" if total else "—")]:
+                st.markdown(f"<span class='pill'>{label}: {val}</span>", unsafe_allow_html=True)
+
+        render_footer()
 
 
 # ============================================================== MAP EXPLORER
@@ -540,7 +692,7 @@ with tab_map:
                         </script>
             """
 
-        map_html = build_leaflet_map(tuple(states), tuple(sources), tuple(owners), flagged_only)
+        map_html = build_leaflet_map(tuple(states), tuple(sources), tuple(owners), effective_flagged)
         st.iframe(map_html, height=575)
 
         legend_col1, legend_col2 = st.columns([1, 4])
