@@ -7,6 +7,9 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 import streamlit.components.v1 as components
+import hashlib
+import secrets
+from typing import Dict, Any
 
 # ---------------------------------------------------------------- CONFIG ---
 st.set_page_config(
@@ -27,20 +30,70 @@ PAPER2 = "#F5F4EC"
 LINE = "#C9C6B6"
 
 
+USERS_PATH = Path(__file__).resolve().parent / "users.json"
+
+
+def load_users() -> Dict[str, Any]:
+    if not USERS_PATH.exists():
+        return {}
+    try:
+        return json.loads(USERS_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def save_users(users: Dict[str, Any]) -> None:
+    USERS_PATH.write_text(json.dumps(users, indent=2), encoding="utf-8")
+
+
+def hash_password(password: str, salt_hex: str | None = None) -> tuple[str, str]:
+    if salt_hex is None:
+        salt_hex = secrets.token_hex(16)
+    salt = bytes.fromhex(salt_hex)
+    dk = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 100_000)
+    return salt_hex, dk.hex()
+
+
+def verify_password(password: str, salt_hex: str, hash_hex: str) -> bool:
+    _, calc = hash_password(password, salt_hex)
+    return secrets.compare_digest(calc, hash_hex)
+
+
 def authenticate(username: str, password: str) -> bool:
+    users = load_users()
+    if username in users:
+        entry = users[username]
+        return verify_password(password, entry.get("salt", ""), entry.get("hash", ""))
+    # fallback to environment credential for first-time admin access
     expected_user = os.getenv("WATER_ATM_USERNAME", "admin")
     expected_password = os.getenv("WATER_ATM_PASSWORD", "wateratm2026")
     return username == expected_user and password == expected_password
 
 
+def register_user(username: str, password: str) -> tuple[bool, str]:
+    if not username or not password:
+        return False, "Username and password are required."
+    users = load_users()
+    if username in users:
+        return False, "Username already exists."
+    if len(password) < 8:
+        return False, "Password must be at least 8 characters."
+    salt, h = hash_password(password)
+    users[username] = {"salt": salt, "hash": h}
+    save_users(users)
+    return True, "User registered. You are now logged in."
+
+
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
+    st.session_state.user = None
+
 
 if not st.session_state.authenticated:
     st.markdown(
         """
         <style>
-        .login-shell { max-width: 480px; margin: 48px auto; padding: 28px; background: #F5F4EC; border: 1px solid #C9C6B6; border-radius: 8px; }
+        .login-shell { max-width: 620px; margin: 48px auto; padding: 28px; background: #F5F4EC; border: 1px solid #C9C6B6; border-radius: 8px; }
         .login-title { font-family: 'Space Grotesk', sans-serif; font-size: 28px; color: #0C2124; margin-bottom: 8px; }
         .login-subtitle { color: #4B5A5A; margin-bottom: 18px; }
         </style>
@@ -57,18 +110,42 @@ if not st.session_state.authenticated:
         unsafe_allow_html=True,
     )
 
-    with st.form("login_form"):
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
-        submitted = st.form_submit_button("Log in")
+    mode = st.radio("Action", ["Log in", "Create account"], index=0, horizontal=True)
 
-    if submitted:
-        if authenticate(username, password):
-            st.session_state.authenticated = True
-            st.success("Logged in successfully.")
-            st.rerun()
-        else:
-            st.error("Invalid username or password.")
+    if mode == "Log in":
+        with st.form("login_form"):
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
+            submitted = st.form_submit_button("Log in")
+
+        if submitted:
+            if authenticate(username, password):
+                st.session_state.authenticated = True
+                st.session_state.user = username
+                st.success("Logged in successfully.")
+                st.rerun()
+            else:
+                st.error("Invalid username or password.")
+
+    else:
+        with st.form("register_form"):
+            r_user = st.text_input("Choose a username")
+            r_pass = st.text_input("Choose a password", type="password")
+            r_pass2 = st.text_input("Confirm password", type="password")
+            reg = st.form_submit_button("Create account")
+
+        if reg:
+            if r_pass != r_pass2:
+                st.error("Passwords do not match.")
+            else:
+                ok, msg = register_user(r_user, r_pass)
+                if ok:
+                    st.session_state.authenticated = True
+                    st.session_state.user = r_user
+                    st.success(msg)
+                    st.rerun()
+                else:
+                    st.error(msg)
 
     st.stop()
 
