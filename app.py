@@ -193,8 +193,12 @@ DATA_PATH = BASE_DIR / "data" / "water_points.parquet"
 
 @st.cache_data
 def load_data():
-    df = pd.read_parquet("data/water_points.parquet")
-    return df
+    if not DATA_PATH.exists():
+        raise FileNotFoundError(
+            f"Missing data file at {DATA_PATH}. Run build_data.py to generate it first."
+        )
+    return pd.read_parquet(DATA_PATH)
+
 
 df = load_data()
 
