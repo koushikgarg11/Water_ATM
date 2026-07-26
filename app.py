@@ -1,4 +1,3 @@
-
 import json
 import os
 from pathlib import Path
@@ -129,8 +128,16 @@ def _validate_password_strength(password: str) -> tuple[bool, str]:
 
 
 def safe_rerun() -> None:
-    """Try to trigger a Streamlit rerun; fallback to stopping the script if unavailable."""
-    rerun = getattr(st, "experimental_rerun", None)
+    """Trigger a Streamlit rerun using whichever API this Streamlit version supports.
+
+    Modern Streamlit (>=1.27) uses st.rerun(); older versions used
+    st.experimental_rerun(). Previously this only checked for the old,
+    now-removed name, so on current Streamlit installs it silently fell
+    through to st.stop() instead of actually rerunning the app -- which is
+    why the page looked "stuck" right after a successful login (you'd see
+    the success message but never the dashboard).
+    """
+    rerun = getattr(st, "rerun", None) or getattr(st, "experimental_rerun", None)
     if callable(rerun):
         try:
             rerun()
@@ -399,7 +406,7 @@ if st.session_state.get("authenticated"):
     if st.sidebar.button("Logout"):
         st.session_state.authenticated = False
         st.session_state.user = None
-        st.experimental_rerun()
+        safe_rerun()
 st.sidebar.markdown("<span style='font-family:IBM Plex Mono,monospace;font-size:11px;color:#9FB6B2;'>FILTERS APPLY ACROSS ALL TABS</span>", unsafe_allow_html=True)
 st.sidebar.markdown("---")
 
@@ -472,7 +479,7 @@ with tab_overview:
         with q1:
                 if st.button("Toggle flagged only (quick)"):
                         st.session_state.quick_flagged = not st.session_state.quick_flagged
-                        st.experimental_rerun()
+                        safe_rerun()
         with q2:
                 if st.button("Clear filters"):
                         st.session_state.states_sel = []
@@ -480,7 +487,7 @@ with tab_overview:
                         st.session_state.owners_sel = []
                         st.session_state.flagged_only = False
                         st.session_state.quick_flagged = False
-                        st.experimental_rerun()
+                        safe_rerun()
         with q3:
                 st.write("")
 
