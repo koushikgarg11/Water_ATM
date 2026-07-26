@@ -128,6 +128,22 @@ def _validate_password_strength(password: str) -> tuple[bool, str]:
     return True, ""
 
 
+def safe_rerun() -> None:
+    """Try to trigger a Streamlit rerun; fallback to stopping the script if unavailable."""
+    rerun = getattr(st, "experimental_rerun", None)
+    if callable(rerun):
+        try:
+            rerun()
+            return
+        except Exception:
+            pass
+    # Best-effort fallback: stop execution so UI reflects session_state changes on next load.
+    try:
+        st.stop()
+    except Exception:
+        return
+
+
 def register_user(username: str, password: str) -> tuple[bool, str]:
     if not username or not password:
         return False, "Username and password are required."
@@ -190,7 +206,7 @@ if not st.session_state.authenticated:
                         st.session_state.authenticated = True
                         st.session_state.user = username
                         st.success("Logged in successfully.")
-                        st.experimental_rerun()
+                        safe_rerun()
                     else:
                         _record_failed_attempt(users, username)
                         entry = users.get(username, {})
@@ -202,7 +218,7 @@ if not st.session_state.authenticated:
                     st.session_state.authenticated = True
                     st.session_state.user = username
                     st.success("Logged in successfully.")
-                    st.experimental_rerun()
+                    safe_rerun()
                 else:
                     st.error("Invalid username or password.")
 
@@ -226,7 +242,7 @@ if not st.session_state.authenticated:
                         st.session_state.authenticated = True
                         st.session_state.user = r_user
                         st.success(msg2)
-                        st.experimental_rerun()
+                        safe_rerun()
                     else:
                         st.error(msg2)
 
